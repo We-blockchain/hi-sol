@@ -1,19 +1,21 @@
 # hi-sol
 
-To install dependencies:
+## program
 
+Init a Rust libraray:
 ```bash
-bun install
+cargo new program --lib
+cd program
+#cargo add solana-program
+cargo add solana-program@=1.17.17
 ```
 
-To run:
-
-```bash
-bun run index.ts
+Edit Cargo.toml:
 ```
-
-This project was created using `bun init` in bun v1.0.7. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
-
+[lib]
+name = "program"
+crate-type = ["cdylib", "lib"]
+```
 
 ## other
 
