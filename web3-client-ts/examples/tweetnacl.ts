@@ -3,8 +3,7 @@ import web3 from "@solana/web3.js";
 // TweetNacl 是 NaCl 的紧凑实现: https://en.wikipedia.org/wiki/NaCl_(software)
 // 许多平台都有 NaCl 兼容的实现, 比如 Libsodium: https://doc.libsodium.org
 import nacl from 'tweetnacl';
-// @ts-ignore
-import base58 from 'base-58';
+import base58 from 'bs58';
 import { seedToKeypair } from "./seedToKeypair";
 
 function testSeedToKeypair() {
