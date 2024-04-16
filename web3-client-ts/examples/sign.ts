@@ -12,7 +12,7 @@ function seedToKeypair(seed: Uint8Array) {
 
 // Solana签名系统使用一种名为Ed25519的高速高安全签名的非对称加密算法, 生成的签名内容小(大小为 64 字节): https://ed25519.cr.yp.to
 // https://docs.solanalabs.com/de/cli/examples/sign-offchain-message
-function singMsg(message: Uint8Array | string, secretKey: web3.Ed25519SecretKey) {
+function signMsg(message: Uint8Array | string, secretKey: web3.Ed25519SecretKey) {
     if (typeof message == "string") {
         message = new TextEncoder().encode(message);
     }
@@ -50,7 +50,7 @@ function testSingMsg() {
     let byte32 = Uint8Array.from([98, 189, 226, 198, 2, 192, 112, 255, 161, 24, 248, 194, 178, 197, 220, 188, 245, 253, 171, 123, 10, 44, 73, 7, 188, 176, 19, 152, 239, 189, 245, 182, 246, 26, 43, 168, 168, 83, 45, 236, 197, 127, 106, 38, 211, 77, 96, 240, 171, 62, 173, 96, 116, 54, 81, 150, 62, 212, 28, 100, 14, 34, 223, 24].slice(0, 32));
     let { publicKey, secretKey } = seedToKeypair(byte32);
     let msg = new TextEncoder().encode("\xffsolana offchainHello"); // 为了确保链下消息不是有效的交易, Solana CLI添加了"\xffsolana offchain"前缀
-    let { encryptedMessage, signedMessage, signature } = singMsg(msg, secretKey);
+    let { encryptedMessage, signedMessage, signature } = signMsg(msg, secretKey);
     console.log({ msg, encryptedMessage, signedMessage, signature, signer: publicKey.toBase58() });
     let decodedmsg = decodeMsg(encryptedMessage, publicKey);
     console.log({ decodedmsg, msg: new TextDecoder().decode(msg) });
