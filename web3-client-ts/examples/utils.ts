@@ -13,7 +13,7 @@ export function normalizeAddress(address: Address): web3.PublicKey {
 
 export async function airdrop(conn: web3.Connection, address: Address, sol: number) {
     address = normalizeAddress(address);
-    console.log(`[Airdrop] ${address.toBase58()}: ${sol} SOL`);
+    console.log(`[Airdropping] ${address.toBase58()}: ${sol} SOL`);
     await conn.requestAirdrop(address, sol * web3.LAMPORTS_PER_SOL);
     return new Promise((resolve) => {
         let id = conn.onAccountChange(address, (accountInfo) => {
@@ -48,15 +48,21 @@ export async function transfer(conn: web3.Connection, from: Keypair, to: Address
 export async function transfer2(conn: web3.Connection, from: Keypair, to: Address, sol: number) {
     to = normalizeAddress(to);
     let latestBlockhash = await conn.getLatestBlockhash();
+    // solana在發送交易時會需要將最近的blockhash包進tx內一起簽名送出
+    // 如果鏈上發現你帶的blockhash距離鏈上最新的blockhash太遠的話
+    // 會直接拒絕tx，如果你有需要暫存交易一陣子才發出的需求，可以參閱 durable nonce 篇的介紹
     let transaction = new web3.Transaction({
         blockhash: latestBlockhash.blockhash,
         lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
-        feePayer: from.publicKey,
-    }).add(web3.SystemProgram.transfer({
+        // feePayer: from.publicKey,
+    });
+    transaction.add(web3.SystemProgram.transfer({
         fromPubkey: from.publicKey,
         toPubkey: to,
         lamports: sol * web3.LAMPORTS_PER_SOL,
     }));
+    transaction.feePayer = from.publicKey;
+    // 计算交易费
     let fee = (await conn.getFeeForMessage(transaction.compileMessage())).value!! / web3.LAMPORTS_PER_SOL;
     console.log(`[Transfer] from ${from.publicKey.toBase58()} to ${to.toBase58()} ${sol} SOL, fee: ${fee}`);
     // 发送序列化交易，同时进行分离式数字签名
@@ -75,6 +81,36 @@ export async function transfer2(conn: web3.Connection, from: Keypair, to: Addres
     }, {
         commitment: "finalized",
     });
+}
+
+/**
+ * 将转移SOL代币交易序列化为字符串
+ * @returns message - 交易消息的Base58序列化字符串
+ * @returns fee - 交易手续费
+ */
+export async function generateTransferOrder(conn: web3.Connection, from: Address, to: Address, sol: number) {
+    from = normalizeAddress(from);
+    to = normalizeAddress(to);
+    let latestBlockhash = await conn.getLatestBlockhash();
+    let transaction = new web3.Transaction({
+        blockhash: latestBlockhash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        feePayer: from,
+    }).add(web3.SystemProgram.transfer({
+        fromPubkey: from,
+        toPubkey: to,
+        lamports: sol * web3.LAMPORTS_PER_SOL,
+    }));
+    let fee = (await conn.getFeeForMessage(transaction.compileMessage())).value!! / web3.LAMPORTS_PER_SOL;
+    console.log(`[TransferOrder] from ${from.toBase58()} to ${to.toBase58()} ${sol} SOL, fee: ${fee}`);
+    // 编译消息并序列化消息
+    let msg = transaction.compileMessage();
+    let msgBuffer = msg.serialize(); // transaction.serializeMessage()
+    return {
+        transaction,
+        message: base58.encode(msgBuffer),
+        fee: fee,
+    };
 }
 
 export async function showBalances(conn: web3.Connection, ...address: Address[]) {

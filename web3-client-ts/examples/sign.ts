@@ -12,7 +12,7 @@ function seedToKeypair(seed: Uint8Array) {
 
 // Solana签名系统使用一种名为Ed25519的高速高安全签名的非对称加密算法, 生成的签名内容小(大小为 64 字节): https://ed25519.cr.yp.to
 // https://docs.solanalabs.com/de/cli/examples/sign-offchain-message
-function signMsg(message: Uint8Array | string, secretKey: web3.Ed25519SecretKey) {
+export function signMsg(message: Uint8Array | string, secretKey: web3.Ed25519SecretKey) {
     if (typeof message == "string") {
         message = new TextEncoder().encode(message);
     }
@@ -32,7 +32,7 @@ function signMsg(message: Uint8Array | string, secretKey: web3.Ed25519SecretKey)
     return { encryptedMessage, signedMessage, signature };
 }
 
-function decodeMsg(encryptedMessage: Uint8Array, publicKey: web3.PublicKey | Uint8Array | string) {
+export function decodeMsg(encryptedMessage: Uint8Array, publicKey: web3.PublicKey | Uint8Array | string) {
     switch (true) {
         case publicKey instanceof web3.PublicKey: {
             return nacl.sign.open(encryptedMessage, publicKey.toBytes());
