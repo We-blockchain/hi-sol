@@ -6,20 +6,33 @@ let connection = new web3.Connection(rpc);
 let program_id = "GoBVPYUK5gYNmMen785Ug1yseUrwszP7kYGcG6xUz3yU";
 
 let secretKey = Uint8Array.from([98, 189, 226, 198, 2, 192, 112, 255, 161, 24, 248, 194, 178, 197, 220, 188, 245, 253, 171, 123, 10, 44, 73, 7, 188, 176, 19, 152, 239, 189, 245, 182]);
-let keypair = web3.Keypair.fromSeed(secretKey);
+let feePayer = web3.Keypair.fromSeed(secretKey);
+let keypair = web3.Keypair.generate();
+let keypair2 = web3.Keypair.generate();
 
-let address: string = keypair.publicKey.toBase58();
+let address: string = feePayer.publicKey.toBase58();
 console.log({ address, program_id });
 
 let transaction = new web3.Transaction();
 transaction.add(new web3.TransactionInstruction({
-    keys: [],
+    keys: [
+        {
+            pubkey: keypair.publicKey,
+            isSigner: false,
+            isWritable: false,
+        },
+        {
+            pubkey: keypair2.publicKey,
+            isSigner: true,
+            isWritable: false,
+        },
+    ],
     programId: new web3.PublicKey(program_id),
     data: Buffer.from([1, 2, 3])
 }));
 
 // let TRANSACTION_SIGNATURE = await web3.sendAndConfirmTransaction(connection, transaction, [keypair]);
-let TRANSACTION_SIGNATURE = await connection.sendTransaction(transaction, [keypair]);
+let TRANSACTION_SIGNATURE = await connection.sendTransaction(transaction, [feePayer, keypair2]); // you can try to remove and see what will happen
 console.log({ TRANSACTION_SIGNATURE });
 
 let latestBH = await connection.getLatestBlockhash('confirmed');
