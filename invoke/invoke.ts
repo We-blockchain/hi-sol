@@ -22,6 +22,7 @@ transaction.add(new web3.TransactionInstruction({
             isSigner: false,
             isWritable: true,
         },
+        // 要跨程序调用调用系统指令，必须传入系统程序账户
         {
             pubkey: SystemProgram.programId,
             isSigner: false,

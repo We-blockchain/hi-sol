@@ -1,4 +1,7 @@
 import web3 from "@solana/web3.js";
+// 将账户 BDpgZWLscJxaM97VRAG3Z937jTvu2DA67GACavCFuQci 的所有权转移给程序 AGPTadm3zoNBYpmr3xDnFQNMwHZkmmqjrmSGz6N8eQw
+// 可能会因为该账户有余额而失败
+import "./createAccount";
 
 var rpc = web3.clusterApiUrl("mainnet-beta");
 var rpc = "http://localhost:8899";
@@ -32,6 +35,7 @@ transaction.add(new web3.TransactionInstruction({
             isSigner: false,
             isWritable: true,
         },
+        // 要跨程序调用调用系统指令，必须传入系统程序账户
         {
             pubkey: web3.SystemProgram.programId,
             isSigner: false,

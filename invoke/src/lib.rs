@@ -17,7 +17,7 @@ entrypoint!(process_instruction);
 
 // program entrypoint's implementation
 pub fn process_instruction(
-    _program_id: &Pubkey,
+    program_id: &Pubkey,
     accounts: &[AccountInfo],
     instruction_data: &[u8],
 ) -> ProgramResult {
@@ -35,21 +35,32 @@ pub fn process_instruction(
     // 要跨程序调用调用系统指令，必须传入系统程序账户
     let _system_program = next_account_info(account_iter)?;
 
-    msg!(&format!( "Transfer from {} to {} {}", from.key.to_string(), to.key.to_string(), sol));
-
     // 通过 solana rent 0 或 solana rent system 命令查询免租最低限额，这也是通过转账新开账户的最低限度
     // Rent-exempt minimum: 0.00089088 SOL
-    if (sol.0 as f64) / (LAMPORTS_PER_SOL as f64) < 0.00089088 {
+    if sol.0 < (0.00089088 * LAMPORTS_PER_SOL as f64) as u64 {
         msg!("没有必要的转账!");
-        // return Ok(());
+        return Ok(());
     }
+    msg!(&format!( "Transfer from {} to {} {}", from.key.to_string(), to.key.to_string(), sol));
 
-    // 跨程序调用
-    let result = invoke(
-        &system_instruction::transfer(&from.key, &to.key, sol.0),
-        &[from.clone(), to.clone()],
-    );
-    msg!(&format!("Transfer result: {:?}", result));
+    // 如果支付SOL的地址不属于系统程序，则不能调用系统程序来进行Transfer，必须由所属的程序通过修改lamports字段来实现
+    if from.owner == program_id {
+        msg!("Owner is this program!");
+        // SOL转移数量必须匹配
+        // 移动账户所有余额，删除旧账户
+        // **to.try_borrow_mut_lamports()? += from.lamports();
+        // **from.try_borrow_mut_lamports()? = 0;
+        // 正常转账
+        **to.try_borrow_mut_lamports()? += sol.0;
+        **from.try_borrow_mut_lamports()? -= sol.0;
+    } else {
+        // 跨程序调用
+        let result = invoke(
+            &system_instruction::transfer(&from.key, &to.key, sol.0),
+            &[from.clone(), to.clone()],
+        );
+        msg!(&format!("Transfer result: {:?}", result));
+    }
 
     // gracefully exit the program
     Ok(())
