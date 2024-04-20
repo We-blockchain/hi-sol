@@ -44,7 +44,10 @@ pub fn process_instruction(
     msg!(&format!( "Transfer from {} to {} {}", from.key.to_string(), to.key.to_string(), sol));
 
     // 如果支付SOL的地址不属于系统程序，则不能调用系统程序来进行Transfer，必须由所属的程序通过修改lamports字段来实现
+    // 如果程序拥有账户，那么程序不需要签名就可以转移代币
     if from.owner == program_id {
+    // 可以强制要求签名
+    // if from.is_signer && from.owner == program_id {
         msg!("Owner is this program!");
         // SOL转移数量必须匹配
         // 移动账户所有余额，删除旧账户

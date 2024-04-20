@@ -27,7 +27,7 @@ transaction.add(new web3.TransactionInstruction({
     keys: [
         {
             pubkey: ownerAccount.publicKey,
-            isSigner: true,
+            isSigner: false,
             isWritable: true,
         },
         {
@@ -46,8 +46,10 @@ transaction.add(new web3.TransactionInstruction({
     data: Buffer.from(new TextEncoder().encode("1"))
 }));
 
-// let TRANSACTION_SIGNATURE = await web3.sendAndConfirmTransaction(connection, transaction, [keypair]);
-let TRANSACTION_SIGNATURE = await connection.sendTransaction(transaction, [feePayer, ownerAccount]); // you can try to remove and see what will happen
+// let TRANSACTION_SIGNATURE = await web3.sendAndConfirmTransaction(connection, transaction, [feePayer]);
+// 如果程序拥有账户，那么程序不需要签名就可以转移代币
+// 当然，前提是 isWritable 必须为 true，否则报错：Error processing Instruction 0: instruction changed the balance of a read-only account
+let TRANSACTION_SIGNATURE = await connection.sendTransaction(transaction, [feePayer, /*ownerAccount*/]);
 console.log({ TRANSACTION_SIGNATURE });
 
 let latestBH = await connection.getLatestBlockhash('confirmed');

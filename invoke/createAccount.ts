@@ -11,30 +11,44 @@ let newAccountKeypair = web3.Keypair.fromSecretKey(Uint8Array.from([36, 181, 163
 // let newAccountKeypair = web3.Keypair.generate();
 
 // 将 BDpgZWLscJxaM97VRAG3Z937jTvu2DA67GACavCFuQci 的所有权转移给程序 AGPTadm3zoNBYpmr3xDnFQNMwHZkmmqjrmSGz6N8eQw
-let owner = "AGPTadm3zoNBYpmr3xDnFQNMwHZkmmqjrmSGz6N8eQw";
+let owner = new web3.PublicKey("AGPTadm3zoNBYpmr3xDnFQNMwHZkmmqjrmSGz6N8eQw");
 
-// await airdrop(connection, fromKeypair.publicKey, 1000);
+let account = await connection.getAccountInfo(newAccountKeypair.publicKey);
+if (account) {
+    if (!account.owner.equals(owner)) {
+        throw new Error("账户已存在！");
+    } else {
+        console.warn("账户已属于目标程序！");
+    }
+} else {
 
-// 创建账户时，可以指定账户的所有者程序，默认是系统程序
-// 该账户余额必须是0，因为只有0余额的地址不存在于系统账本中，属于新账户
-// 你也不能对别人的0余额地址进行所有权转让，因为发送交易需要该账户的签名
-// 创建账户的同时必须存入租金，由 fromPubkey 存入，因此还需要 fromPubkey 的签名，当然，fromPubkey 也可以是 feePayer
-const createAccountTransaction = new Transaction().add(
-    SystemProgram.createAccount({
-        fromPubkey: feePayer.publicKey,
-        // fromPubkey: fromKeypair.publicKey,
-        newAccountPubkey: newAccountKeypair.publicKey,
-        lamports: 100 * LAMPORTS_PER_SOL,
-        space: 0,
-        // 向一个 0 余额地址转账时，实际上是创建一个属于 SystemProgram 的账户，并存入租金
-        // programId: SystemProgram.programId, // 11111111111111111111111111111111
-        programId: new web3.PublicKey(owner),
-    })
-);
+    // await airdrop(connection, fromKeypair.publicKey, 1000);
 
-let signature = await sendAndConfirmTransaction(connection, createAccountTransaction, [
-    feePayer,
-    // fromKeypair,
-    newAccountKeypair,
-]);
-console.log({ signature });
+    // 创建账户时，可以指定账户的所有者程序，默认是系统程序
+    // 该账户余额必须是0，因为只有0余额的地址不存在于系统账本中，属于新账户
+    // 你也不能对别人的0余额地址进行所有权转让，因为发送交易需要该账户的签名
+    // 创建账户的同时必须存入租金，由 fromPubkey 存入，因此还需要 fromPubkey 的签名，当然，fromPubkey 也可以是 feePayer
+    const createAccountTransaction = new Transaction().add(
+        SystemProgram.createAccount({
+            fromPubkey: feePayer.publicKey,
+            // fromPubkey: fromKeypair.publicKey,
+            newAccountPubkey: newAccountKeypair.publicKey,
+            lamports: 100 * LAMPORTS_PER_SOL,
+            space: 0,
+            // 向一个 0 余额地址转账时，实际上是创建一个属于 SystemProgram 的账户，并存入租金
+            // programId: SystemProgram.programId, // 11111111111111111111111111111111
+            programId: owner,
+        })
+    );
+
+    let signature = await sendAndConfirmTransaction(connection, createAccountTransaction, [
+        feePayer,
+        // fromKeypair,
+        newAccountKeypair,
+    ]);
+    console.log({
+        op: `创建账户 ${ newAccountKeypair.publicKey.toBase58() }`,
+        signature
+    });
+
+}
