@@ -10,4 +10,5 @@ name = "counter"
 crate-type = ["cdylib", "lib"]
 
 [dependencies]
+bs58 = "0.5.1"
 solana-program = "=1.17.17"
