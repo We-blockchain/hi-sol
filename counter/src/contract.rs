@@ -28,6 +28,8 @@ pub fn entrypoint(
         .into_vec()
         .unwrap();
     let owner = Pubkey::try_from(owner).unwrap();
+    // use std::str::FromStr;
+    // let owner = Pubkey::from_str("3DHRsdoXRZR6DMMhCsd7npska1GmcS9b5qhfw186nTJ2").unwrap();
     msg!(&format!(
         "Counter is: {}, data from account {}",
         data[0], owner

@@ -3,5 +3,6 @@ resolver = "2"
 members = [
     # "program",
     # "invoke",
-    "counter",
+    # "counter",
+    "pda",
 ]
