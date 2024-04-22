@@ -15,6 +15,8 @@ pub fn process_instruction(
     let newbie = accounts.next().unwrap();
 
     // 每个seed都可以确定一个唯一的PDA地址
+    // 由于 find_program_address 需要反复调用 create_program_address，因此在链上使用时可能会耗费更多计算预算。
+    // 要降低计算成本，可在链外使用 find_program_address，并将生成的凸点种子传递给程序。
     let seed: &[u8] = b"PDA-seed";
     let (pda, bump) = Pubkey::find_program_address(&[seed], program_id);
     msg!(&format!("PDA address: {pda}, bump: {bump}"));

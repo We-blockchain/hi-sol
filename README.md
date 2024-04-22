@@ -22,3 +22,5 @@ crate-type = ["cdylib", "lib"]
 Solana Quickstart Guide: https://docs.solana.com/getstarted/hello-world
 
 Solana Playground | Solana IDE: https://beta.solpg.io/
+
+Solana秘籍: https://solanacookbook.com/zh/
