@@ -40,7 +40,9 @@ export async function confirmAndSignMsg(message: string, signer: Keypair) {
     let serializeBuffer: Buffer = transaction.serializeMessage();
     // let serializeBuffer: Buffer = Buffer.from(base58.decode(message));
     // 4. 对序列化的消息Buffer进行签名
-    let { signature, signedMessage } = signMsg(serializeBuffer, signer.secretKey);
+    // let { signature, signedMessage } = signMsg(serializeBuffer, signer.secretKey);
+    // same as:
+    let { signature, signedMessage } = signMsg(base58.decode(message), signer.secretKey);
     // 5. 将签名添加到交易
     transaction.addSignature(signer.publicKey, Buffer.from(signedMessage));
     // 6. 序列化交易
@@ -53,8 +55,10 @@ export async function confirmAndSignMsg(message: string, signer: Keypair) {
 async function testTransferOrder() {
     await showBalances(conn, from.publicKey, to.publicKey);
     console.log("生成交易中...");
-    let { message, fee } = await generateTransferOrder(conn, from.publicKey, to.publicKey, 1);
-    console.log({ message, fee });
+    // let { message, fee } = await generateTransferOrder(conn, from.publicKey, to.publicKey, 1);
+    // console.log({ message, fee });
+    var message = '87PYvQBRgZK1u7WsYqWKhdGb8oEoPJz9EET7pmn7hpGEHKjDhScrGXc7Ch6QP3212c3pRRR5YvJ6Kh4ZsoX31LbzLqADcPav4GkqqTXWjLAUFUUhGAvpBRihLNrS3mk8L8pvzfnjm6hrn1Ccf7JGxVbQ7J3EXFHSSkTyS192Jx1hHwL1jqeAp5nTUtNi3u5kWm28bbEMwqJP';
+    // return;
 
     console.log("确认交易细节并签署交易中...");
     let { tx, signature } = await confirmAndSignMsg(message, from);
